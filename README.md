@@ -1,9 +1,11 @@
 ## $KRYPT ERC-20 Token
 
+This is the ERC-20 token used in the https://github.com/Forte-Service-Company-Ltd/forte-demo-app project.
+
 1. Clone this repository
 
 ```bash
-git clone git@github.com:thrackle-io/this-repo
+git clone git@github.com:forte-service-company-ltd/krypt-token
 ```
 
 2. Install dependencies
@@ -82,20 +84,19 @@ export POLICY_ID=
 npx tsx index.ts applyPolicy $POLICY_ID $KRYPT_TOKEN
 ```
 
-Test failure condition by trying to transfer tokens to an address on the OFAC sanctions list
-
 ```bash
+# test expected failure txs for ofac address
 cast send $KRYPT_TOKEN "transfer(address,uint256)" 0x8576acc5c05d6ce88f4e49bf65bdf0c62f91353c 10000 --rpc-url $RPC_URL --private-key $PRIV_KEY
 cast send $KRYPT_TOKEN "transferFrom(address,address,uint256)" $TOKEN_ADMIN 0x8576acc5c05d6ce88f4e49bf65bdf0c62f91353c 10000 --rpc-url $RPC_URL --private-key $PRIV_KEY
 
-# test mint failure for KRYPT test contract
+# test mint failure for KRYPT test contract, no longer expected to fail
 cast send $KRYPT_TOKEN "mint(address,uint256)" $TOKEN_ADMIN 1000000 --rpc-url $RPC_URL --private-key $PRIV_KEY
 
 # unapply a policy
 cast send $RULES_ENGINE_ADDRESS "unapplyPolicy(address,uint256[])" $KRYPT_TOKEN "[10]" --rpc-url $RPC_URL --private-key $PRIV_KEY
-
+# get policy Ids for the token
 cast call $RULES_ENGINE_ADDRESS "getAppliedPolicyIds(address)(uint256[])" $KRYPT_TOKEN --rpc-url $RPC_URL
-
+# call adapter contract directly
 cast call $ADAPTER_CONTRACT_ADDRESS "isDenied(address)(bool)" 0x8576acc5c05d6ce88f4e49bf65bdf0c62f91353c --rpc-url $RPC_URL
 
 # get the rules for a policy (requires custom chagnes to index.ts)
