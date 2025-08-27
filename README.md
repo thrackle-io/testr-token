@@ -102,3 +102,14 @@ cast call $ADAPTER_CONTRACT_ADDRESS "isDenied(address)(bool)" 0x8576acc5c05d6ce8
 # get the rules for a policy (requires custom chagnes to index.ts)
 npx tsx index.ts getAllRules $POLICY_ID
 ```
+
+## Create the AMM
+
+This is done from the liquidity-altbc repo. Set the XTOKEN_ADDRESS env variable to the address of the deployed krypt token.
+Also need to set the y token address which is a mock USDC coin. The address on sepolia for the usdc token we are using is: `0xa3CA2354B631F3a3aEBCE4cc5503f67D14A18423`
+
+Then run this script:
+
+```bash
+forge script script/deploy/deploy.s.sol:ALTBCPoolDeployment --ffi --broadcast --rpc-url $RPC_URL --gas-price $GAS_NUMBER
+```
