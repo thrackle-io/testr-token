@@ -1,0 +1,57 @@
+{
+  "Policy": "OFAC Deny List Policy [Sepolia]",
+  "Description": "This policy is used to check if the receiver is on the OFAC Deny List",
+  "PolicyType": "open",
+  "CallingFunctions": [
+    {
+      "name": "transfer(address to, uint256 value)",
+      "functionSignature": "transfer(address to, uint256 value)",
+      "encodedValues": "address to, uint256 value"
+    },
+    {
+      "name": "transferFrom(address from, address to, uint256 value)",
+      "functionSignature": "transferFrom(address from, address to, uint256 value)",
+      "encodedValues": "address from, address to, uint256 value"
+    }
+  ],
+  "ForeignCalls": [
+    {
+      "name": "isDenied(address)",
+      "address": "0x333172b31BA33EFC4874315D1894c2016d325D3f",
+      "function": "isDenied(address)",
+      "returnType": "bool",
+      "valuesToPass": "to",
+      "mappedTrackerKeyValues": "",
+      "callingFunction": "transfer(address to, uint256 value)"
+    },
+    {
+      "name": "isDenied(address)",
+      "address": "0x333172b31BA33EFC4874315D1894c2016d325D3f",
+      "function": "isDenied(address)",
+      "returnType": "bool",
+      "valuesToPass": "to",
+      "mappedTrackerKeyValues": "",
+      "callingFunction": "transferFrom(address from, address to, uint256 value)"
+    }
+  ],
+  "MappedTrackers": [],
+  "Trackers": [],
+  "Rules": [
+    {
+      "Name": "OFAC Deny List Transfer",
+      "Description": "This rule checks if the receiver is on the OFAC Deny List for the transfer function",
+      "condition": "FC:isDenied == false",
+      "positiveEffects": [],
+      "negativeEffects": ["revert(\"Receiver is on OFAC Deny List\")"],
+      "callingFunction": "transfer(address to, uint256 value)"
+    },
+    {
+      "Name": "OFAC Deny List TransferFrom",
+      "Description": "This rule checks if the receiver is on the OFAC Deny List for the transferFrom function",
+      "condition": "FC:isDenied == false",
+      "positiveEffects": [],
+      "negativeEffects": ["revert(\"Receiver is on OFAC Deny List\")"],
+      "callingFunction": "transferFrom(address from, address to, uint256 value)"
+    }
+  ]
+}

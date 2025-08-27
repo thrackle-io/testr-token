@@ -1,0 +1,35 @@
+{
+  "Policy": "KRYPT Token Policy",
+  "Description": "This policy is used to check if the receiver is on the OFAC Deny List",
+  "PolicyType": "open",
+  "CallingFunctions": [
+    {
+      "name": "_update",
+      "functionSignature": "_update(address from, address to, uint256 value)",
+      "encodedValues": "address from, address to, uint256 value"
+    }
+  ],
+  "ForeignCalls": [
+    {
+      "name": "isDenied(address)",
+      "address": "0x0ca356125687237bC1FB547a3BCb2F6b73d0093f",
+      "function": "isDenied(address)",
+      "returnType": "bool",
+      "valuesToPass": "to",
+      "mappedTrackerKeyValues": "",
+      "callingFunction": "_update(address from, address to, uint256 value)"
+    }
+  ],
+  "MappedTrackers": [],
+  "Trackers": [],
+  "Rules": [
+    {
+      "Name": "OFAC Deny List",
+      "Description": "This rule checks if the receiver is on the OFAC Deny List",
+      "condition": "FC:isDenied == false",
+      "positiveEffects": [],
+      "negativeEffects": ["revert(\"Receiver is on OFAC Deny List\")"],
+      "callingFunction": "_update(address from, address to, uint256 value)"
+    }
+  ]
+}

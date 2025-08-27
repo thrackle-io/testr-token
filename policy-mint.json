@@ -1,0 +1,25 @@
+{
+  "Policy": "KRYPT Token Mint Policy",
+  "Description": "This policy is to check if mint can trigger FRE",
+  "PolicyType": "open",
+  "CallingFunctions": [
+    {
+      "name": "check(address to, uint256 value)",
+      "functionSignature": "check(address to, uint256 value)",
+      "encodedValues": "address to, uint256 value"
+    }
+  ],
+  "ForeignCalls": [],
+  "MappedTrackers": [],
+  "Trackers": [],
+  "Rules": [
+    {
+      "Name": "Will Revert",
+      "Description": "This rule will always revert",
+      "condition": "1 == 1",
+      "positiveEffects": ["revert(\"force failure\")"],
+      "negativeEffects": ["revert(\"this should never happen\")"],
+      "callingFunction": "check(address to, uint256 value)"
+    }
+  ]
+}
