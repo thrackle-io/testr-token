@@ -16,7 +16,7 @@
   ],
   "ForeignCalls": [
     {
-      "name": "isDenied(address)",
+      "name": "isDeniedForTransfer",
       "address": "0x333172b31BA33EFC4874315D1894c2016d325D3f",
       "function": "isDenied(address)",
       "returnType": "bool",
@@ -25,7 +25,7 @@
       "callingFunction": "transfer(address to, uint256 value)"
     },
     {
-      "name": "isDenied(address)",
+      "name": "isDeniedForTransferFrom",
       "address": "0x333172b31BA33EFC4874315D1894c2016d325D3f",
       "function": "isDenied(address)",
       "returnType": "bool",
@@ -40,7 +40,7 @@
     {
       "Name": "OFAC Deny List Transfer",
       "Description": "This rule checks if the receiver is on the OFAC Deny List for the transfer function",
-      "condition": "FC:isDenied == false",
+      "condition": "FC:isDeniedForTransfer == false",
       "positiveEffects": [],
       "negativeEffects": ["revert(\"Receiver is on OFAC Deny List\")"],
       "callingFunction": "transfer(address to, uint256 value)"
@@ -48,7 +48,7 @@
     {
       "Name": "OFAC Deny List TransferFrom",
       "Description": "This rule checks if the receiver is on the OFAC Deny List for the transferFrom function",
-      "condition": "FC:isDenied == false",
+      "condition": "FC:isDeniedForTransferFrom == false",
       "positiveEffects": [],
       "negativeEffects": ["revert(\"Receiver is on OFAC Deny List\")"],
       "callingFunction": "transferFrom(address from, address to, uint256 value)"
