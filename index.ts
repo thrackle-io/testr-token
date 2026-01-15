@@ -294,7 +294,7 @@ async function main() {
       InitialKeys: ["0x8d483143256D8b82949765c62D94A2e93f13B1BD"],
       InitialValues: ["1768172992"],
     };
-    await RULES_ENGINE.updateMappedTracker(policyId, 2, JSON.stringify(vestEndJson));
+    await RULES_ENGINE.updateMappedTracker(policyId, 3, JSON.stringify(vestEndJson));
   } else {
     console.log("Invalid command. Please use one of the following commands:");
     console.log("     setupPolicy <OPTIONAL: policyJSONFilePath>");
