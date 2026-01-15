@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {KryptToken} from "../src/KryptToken.sol";
+import {TestrToken} from "../src/TestrToken.sol";
 
-contract KryptTokenScript is Script {
-    KryptToken public krypt;
+contract TestrTokenScript is Script {
+    TestrToken public testr;
 
     function setUp() public {}
 
@@ -14,7 +14,7 @@ contract KryptTokenScript is Script {
 
         vm.startBroadcast();
 
-        krypt = new KryptToken(tokenAdmin);
+        testr = new TestrToken(tokenAdmin);
 
         vm.stopBroadcast();
     }

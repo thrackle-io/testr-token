@@ -16,7 +16,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { Config, createConfig, mock, simulateContract } from "@wagmi/core";
-import { baseSepolia, sepolia, foundry } from "@wagmi/core/chains";
+import { foundry, sepolia, baseSepolia } from "@wagmi/core/chains";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -35,12 +35,34 @@ const foundryAccountAddress: `0x${string}` = process.env.TOKEN_ADMIN as `0x${str
 //-------------------------------------------------------------------------------------------------------------
 
 /**
- * Creates a connection to the local anvil instance.
- * Separate configs will need to be created to communicate with different chains
+ * Gets the chain configuration based on the NETWORK environment variable
+ */
+const getChainConfig = () => {
+  const network = process.env.NETWORK?.toLowerCase();
+
+  switch (network) {
+    case "sepolia":
+      return sepolia;
+    case "base-sepolia":
+      return baseSepolia;
+    case "local":
+    case "anvil":
+    case "foundry":
+      return foundry;
+    default:
+      return sepolia;
+  }
+};
+
+/**
+ * Creates a connection to the specified network.
+ * Supports: local/anvil, bsc, sepolia, basesepolia
  */
 const createTestConfig = async () => {
+  const selectedChain = getChainConfig();
+
   config = createConfig({
-    chains: [process.env.LOCAL_CHAIN?.toLowerCase() == "true" ? foundry : sepolia],
+    chains: [selectedChain],
     client({ chain }) {
       return createClient({
         chain,
@@ -96,6 +118,17 @@ async function applyPolicy(policyId: number, callingContractAddress: Address) {
   }
 }
 
+async function deletePolicy(policyId: number) {
+  try {
+    // Delete the policy!
+    await RULES_ENGINE.deletePolicy(policyId);
+    console.log("Policy deleted!");
+  } catch (error) {
+    console.error(`Error deleteing policy: ${error}`);
+    throw error;
+  }
+}
+
 async function validatePolicyId(policyId: number): Promise<boolean> {
   // Check if the policy ID is a valid number
   if (isNaN(policyId) || policyId <= 0) {
@@ -115,7 +148,20 @@ async function validatePolicyId(policyId: number): Promise<boolean> {
 async function main() {
   await createTestConfig();
   var client = config.getClient({ chainId: config.chains[0].id });
-  RULES_ENGINE = new RulesEngine(RULES_ENGINE_ADDRESS, config, client, 2);
+  // Determine confirmation count based on network
+  const network = process.env.NETWORK?.toLowerCase();
+  const confirmationCount = network === "base-sepolia" ? 2 : 1;
+
+  const rulesEngineResult = await RulesEngine.create(
+    RULES_ENGINE_ADDRESS,
+    config,
+    client,
+    confirmationCount
+  );
+  if (!rulesEngineResult) {
+    throw new Error("Failed to create RulesEngine instance");
+  }
+  RULES_ENGINE = rulesEngineResult;
   await connectConfig(config, 0);
   // Assuming a syntax of npx <run command> <args>
   if (process.argv[2] == "setupPolicy") {
@@ -130,6 +176,10 @@ async function main() {
       return;
     }
     await setupPolicy(policyData);
+  } else if (process.argv[2] === "deletePolicy") {
+    const policyId = Number(process.argv[3]);
+    await validatePolicyId(policyId);
+    await deletePolicy(policyId);
   } else if (process.argv[2] == "injectModifiers") {
     // injectModifiers - npx injectModifiers <policyJSONFilePath> <newModifierFileName> <sourceContractFile>
     // npx tsx index.ts injectModifiers policy.json src/RulesEngineIntegration src/ExampleContract.sol
@@ -143,6 +193,33 @@ async function main() {
     await validatePolicyId(policyId);
     const callingContractAddress = getAddress(process.argv[4]);
     await applyPolicy(policyId, callingContractAddress);
+  } else if (process.argv[2] == "addAllowedSpender") {
+    const policyId = Number(process.argv[3]);
+    const mappedTrackerIndex = 1;
+    const allowedSpendersJson = {
+      Name: "AllowedSpenders",
+      KeyType: "address",
+      ValueType: "bool",
+      InitialKeys: ["0xd475aa4c0eb7756154d74e1aefdd23f8288a1c99"],
+      InitialValues: ["true"],
+    };
+    await RULES_ENGINE.updateMappedTracker(
+      policyId,
+      mappedTrackerIndex,
+      JSON.stringify(allowedSpendersJson)
+    );
+  } else if (process.argv[2] == "checkMappedTracker") {
+    const policyId = Number(process.argv[3]);
+    const policy = await RULES_ENGINE.getPolicy(policyId);
+
+    console.log(policy!.MappedTrackers[0].InitialKeys);
+    console.log(policy!.MappedTrackers[0].InitialValues);
+
+    console.log(policy!.MappedTrackers[1].InitialKeys);
+    console.log(policy!.MappedTrackers[1].InitialValues);
+
+    console.log(policy!.MappedTrackers[2].InitialKeys);
+    console.log(policy!.MappedTrackers[2].InitialValues);
   } else if (process.argv[2] == "getAllRules") {
     // applyPolicy - npx applyPolicy <policyId> <address>
     const policyId = Number(process.argv[3]);
@@ -157,6 +234,67 @@ async function main() {
         2
       )
     );
+  } else if (process.argv[2] == "getRule") {
+    // applyPolicy - npx applyPolicy <policyId> <address>
+    const policyId = Number(process.argv[3]);
+    await validatePolicyId(policyId);
+
+    const ruleId = Number(process.argv[4]);
+
+    const rulesResult = await RULES_ENGINE.getRule(policyId, ruleId);
+    //console.log(rulesResult);
+    console.log(
+      JSON.stringify(
+        rulesResult,
+        (key, value) => (typeof value === "bigint" ? value.toString() : value),
+        2
+      )
+    );
+  } else if (process.argv[2] == "getRuleMetadata") {
+    // applyPolicy - npx applyPolicy <policyId> <address>
+    const policyId = Number(process.argv[3]);
+    await validatePolicyId(policyId);
+
+    const ruleId = Number(process.argv[4]);
+
+    const rulesResult = await RULES_ENGINE.getRuleMetadata(policyId, ruleId);
+    //console.log(rulesResult);
+    console.log(
+      JSON.stringify(
+        rulesResult,
+        (key, value) => (typeof value === "bigint" ? value.toString() : value),
+        2
+      )
+    );
+  } else if (process.argv[2] == "updateMappedTracker") {
+    const policyId = Number(process.argv[3]);
+
+    const vestAmountJson = {
+      Name: "VestAmount",
+      KeyType: "address",
+      ValueType: "uint256",
+      InitialKeys: ["0x8d483143256D8b82949765c62D94A2e93f13B1BD"],
+      InitialValues: ["2000000000000000000000"],
+    };
+    await RULES_ENGINE.updateMappedTracker(policyId, 1, JSON.stringify(vestAmountJson));
+
+    const vestCliffEndJson = {
+      Name: "VestCliffEnd",
+      KeyType: "address",
+      ValueType: "uint256",
+      InitialKeys: ["0x8d483143256D8b82949765c62D94A2e93f13B1BD"],
+      InitialValues: ["1673435392"],
+    };
+    await RULES_ENGINE.updateMappedTracker(policyId, 2, JSON.stringify(vestCliffEndJson));
+
+    const vestEndJson = {
+      Name: "VestEnd",
+      KeyType: "address",
+      ValueType: "uint256",
+      InitialKeys: ["0x8d483143256D8b82949765c62D94A2e93f13B1BD"],
+      InitialValues: ["1768172992"],
+    };
+    await RULES_ENGINE.updateMappedTracker(policyId, 2, JSON.stringify(vestEndJson));
   } else {
     console.log("Invalid command. Please use one of the following commands:");
     console.log("     setupPolicy <OPTIONAL: policyJSONFilePath>");

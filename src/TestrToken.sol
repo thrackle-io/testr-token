@@ -5,10 +5,10 @@ import "src/RulesEngineIntegration.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract KryptToken is RulesEngineClientCustom, ERC20, AccessControl {
+contract TestrToken is RulesEngineClientCustom, ERC20, AccessControl {
     bytes32 constant TOKEN_ADMIN_ROLE = keccak256("TOKEN_ADMIN_ROLE");
 
-    constructor(address _tokenAdmin) ERC20("Krypt Token", "$KRYPT") {
+    constructor(address _tokenAdmin) ERC20("Testr Token", "$TSTR") {
         _grantRole(TOKEN_ADMIN_ROLE, _tokenAdmin);
         _setRoleAdmin(TOKEN_ADMIN_ROLE, TOKEN_ADMIN_ROLE);
     }
@@ -23,8 +23,20 @@ contract KryptToken is RulesEngineClientCustom, ERC20, AccessControl {
     function transfer(
         address to,
         uint256 value
-    ) public override checkRulesBeforetransfer(to, value) returns (bool) {
+    )
+        public
+        override
+        checkRulesBeforeTransfer(to, value, balanceOf(msg.sender), msg.sender)
+        returns (bool)
+    {
         return super.transfer(to, value);
+    }
+
+    function approve(
+        address spender,
+        uint256 value
+    ) public override checkRulesBeforeApprove(spender, value) returns (bool) {
+        return super.approve(spender, value);
     }
 
     function transferFrom(
@@ -34,7 +46,7 @@ contract KryptToken is RulesEngineClientCustom, ERC20, AccessControl {
     )
         public
         override
-        checkRulesBeforetransferFrom(from, to, value)
+        checkRulesBeforeTransferFrom(from, to, value)
         returns (bool)
     {
         return super.transferFrom(from, to, value);

@@ -1,0 +1,46 @@
+{
+  "Policy": "Enforce Vesting",
+  "Description": "This is a test policy to enforce vesting and allow transfers for those not in the vesting schedule",
+  "PolicyType": "open",
+  "CallingFunctions": [
+    {
+      "Name": "Transfer",
+      "FunctionSignature": "transfer(address to, uint256 value)",
+      "EncodedValues": "address to, uint256 value, uint256 senderBalance"
+    }
+  ],
+  "ForeignCalls": [],
+  "MappedTrackers": [
+    {
+      "Name": "VestAmount",
+      "KeyType": "address",
+      "ValueType": "uint256",
+      "InitialKeys": [
+        "0xE4F53F8aD1EB9B8A556ccF363a2389D59447a6df",
+        "0xD46fAFEB018b24177f1C9b40369644619D0c0728"
+      ],
+      "InitialValues": ["1000000000000000000000", "1000000000000000000000"]
+    },
+    {
+      "Name": "VestEnd",
+      "KeyType": "address",
+      "ValueType": "uint256",
+      "InitialKeys": [
+        "0xE4F53F8aD1EB9B8A556ccF363a2389D59447a6df",
+        "0xD46fAFEB018b24177f1C9b40369644619D0c0728"
+      ],
+      "InitialValues": ["1862780992", "1875827392"]
+    }
+  ],
+  "Trackers": [],
+  "Rules": [
+    {
+      "Name": "Test Vesting",
+      "Description": "Just a test rule",
+      "Condition": "TR:VestAmount(GV:MSG_SENDER) == 0",
+      "PositiveEffects": ["revert(\"Tracker value issue\")"],
+      "NegativeEffects": [],
+      "CallingFunction": "Transfer"
+    }
+  ]
+}

@@ -27,19 +27,42 @@ abstract contract RulesEngineClientCustom is RulesEngineClient {
         super.setCallingContractAdmin(callingContractAdmin);
     }
 
-    modifier checkRulesBeforetransfer(address to, uint256 value) {
+    modifier checkRulesBeforeTransfer(
+        address to,
+        uint256 value,
+        uint256 senderBalance,
+        address sender
+    ) {
+        bytes memory encoded = abi.encodeWithSelector(
+            msg.sig,
+            to,
+            value,
+            senderBalance,
+            sender
+        );
+        _invokeRulesEngine(encoded);
+        _;
+    }
+
+    modifier checkRulesAfterTransfer(address to, uint256 value) {
+        bytes memory encoded = abi.encodeWithSelector(msg.sig, to, value);
+        _;
+        _invokeRulesEngine(encoded);
+    }
+
+    modifier checkRulesBeforeApprove(address to, uint256 value) {
         bytes memory encoded = abi.encodeWithSelector(msg.sig, to, value);
         _invokeRulesEngine(encoded);
         _;
     }
 
-    modifier checkRulesAftertransfer(address to, uint256 value) {
+    modifier checkRulesAfterApprove(address to, uint256 value) {
         bytes memory encoded = abi.encodeWithSelector(msg.sig, to, value);
         _;
         _invokeRulesEngine(encoded);
     }
 
-    modifier checkRulesBeforetransferFrom(
+    modifier checkRulesBeforeTransferFrom(
         address from,
         address to,
         uint256 value
@@ -49,7 +72,7 @@ abstract contract RulesEngineClientCustom is RulesEngineClient {
         _;
     }
 
-    modifier checkRulesAftertransferFrom(
+    modifier checkRulesAfterTransferFrom(
         address from,
         address to,
         uint256 value

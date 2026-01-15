@@ -1,0 +1,63 @@
+{
+  "Policy": "Enforce Vesting",
+  "Description": "This policy is used to enforce vesting and allow transfers for those not in the vesting schedule",
+  "PolicyType": "open",
+  "CallingFunctions": [
+    {
+      "Name": "Transfer",
+      "FunctionSignature": "transfer(address to, uint256 value)",
+      "EncodedValues": "address to, uint256 value, uint256 senderBalance, address sender"
+    }
+  ],
+  "ForeignCalls": [],
+  "MappedTrackers": [
+    {
+      "Name": "VestAmount",
+      "KeyType": "address",
+      "ValueType": "uint256",
+      "InitialKeys": [
+        "0xE4F53F8aD1EB9B8A556ccF363a2389D59447a6df",
+        "0xD46fAFEB018b24177f1C9b40369644619D0c0728",
+        "0x8d483143256D8b82949765c62D94A2e93f13B1BD"
+      ],
+      "InitialValues": [
+        "1000000000000000000000",
+        "1000000000000000000000",
+        "1000000000000000000000"
+      ]
+    },
+    {
+      "Name": "VestCliffEnd",
+      "KeyType": "address",
+      "ValueType": "uint256",
+      "InitialKeys": [
+        "0xE4F53F8aD1EB9B8A556ccF363a2389D59447a6df",
+        "0xD46fAFEB018b24177f1C9b40369644619D0c0728",
+        "0x8d483143256D8b82949765c62D94A2e93f13B1BD"
+      ],
+      "InitialValues": ["1768172992", "1781219392", "1673435392"]
+    },
+    {
+      "Name": "VestEnd",
+      "KeyType": "address",
+      "ValueType": "uint256",
+      "InitialKeys": [
+        "0xE4F53F8aD1EB9B8A556ccF363a2389D59447a6df",
+        "0xD46fAFEB018b24177f1C9b40369644619D0c0728",
+        "0x8d483143256D8b82949765c62D94A2e93f13B1BD"
+      ],
+      "InitialValues": ["1862780992", "1875827392", "1768172992"]
+    }
+  ],
+  "Trackers": [],
+  "Rules": [
+    {
+      "Name": "Enforce Vesting (Cliff + Linear)",
+      "Description": "12-month cliff, then linear vesting until VestEnd (clamped after end).",
+      "Condition": "((GV:BLOCK_TIMESTAMP < TR:VestCliffEnd(sender)) AND (senderBalance < [TR:VestAmount(sender) + value])) OR ((GV:BLOCK_TIMESTAMP >= TR:VestCliffEnd(sender)) AND (senderBalance < [[TR:VestAmount(sender) * [TR:VestEnd(sender) - [GV:BLOCK_TIMESTAMP * [GV:BLOCK_TIMESTAMP < TR:VestEnd(sender)] + TR:VestEnd(sender) * [GV:BLOCK_TIMESTAMP >= TR:VestEnd(sender)]]] / 126144000] + value]))",
+      "PositiveEffects": ["revert(\"Transfer exceeds unlocked bal\")"],
+      "NegativeEffects": [],
+      "CallingFunction": "Transfer"
+    }
+  ]
+}

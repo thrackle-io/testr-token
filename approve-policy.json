@@ -25,7 +25,7 @@
       "Name": "AllowedSpenders",
       "KeyType": "address",
       "ValueType": "bool",
-      "InitialKeys": ["0x448b64e8f64ee2d4b0d79bda204926d9760d2ba1"],
+      "InitialKeys": ["0x3a625e46759e46831cbf1b91765dc418f7988df8"],
       "InitialValues": ["true"]
     }
   ],
@@ -42,7 +42,7 @@
     {
       "Name": "AllowedSpenders transferFrom",
       "Description": "Only the AllowedSpenders can call the transferFrom function",
-      "Condition": "TR:AllowedSpenders(to) == true",
+      "Condition": "TR:AllowedSpenders(GV:MSG_SENDER) == true",
       "PositiveEffects": [],
       "NegativeEffects": ["revert(\"Must be AllowedSpender TRF\")"],
       "CallingFunction": "transferFrom(address from, address to, uint256 value)"
