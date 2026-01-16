@@ -7,6 +7,11 @@
       "Name": "Transfer",
       "FunctionSignature": "transfer(address to, uint256 value)",
       "EncodedValues": "address to, uint256 value, uint256 senderBalance, address sender"
+    },
+    {
+      "Name": "TransferFrom",
+      "FunctionSignature": "transferFrom(address from, address to, uint256 value)",
+      "EncodedValues": "address from, address to, uint256 value, uint256 fromBalance"
     }
   ],
   "ForeignCalls": [],
@@ -52,12 +57,20 @@
   "Trackers": [],
   "Rules": [
     {
-      "Name": "Enforce Vesting (Cliff + Linear)",
+      "Name": "Enforce Vesting - transfer",
       "Description": "12-month cliff, then linear vesting until VestEnd (clamped after end).",
       "Condition": "((GV:BLOCK_TIMESTAMP < TR:VestCliffEnd(sender)) AND (senderBalance < [TR:VestAmount(sender) + value])) OR ((GV:BLOCK_TIMESTAMP >= TR:VestCliffEnd(sender)) AND (senderBalance < [[TR:VestAmount(sender) * [TR:VestEnd(sender) - [GV:BLOCK_TIMESTAMP * [GV:BLOCK_TIMESTAMP < TR:VestEnd(sender)] + TR:VestEnd(sender) * [GV:BLOCK_TIMESTAMP >= TR:VestEnd(sender)]]] / 126144000] + value]))",
       "PositiveEffects": ["revert(\"Transfer exceeds unlocked bal\")"],
       "NegativeEffects": [],
       "CallingFunction": "Transfer"
+    },
+    {
+      "Name": "Enforce Vesting - transferFrom",
+      "Description": "12-month cliff, then linear vesting until VestEnd (clamped after end).",
+      "Condition": "((GV:BLOCK_TIMESTAMP < TR:VestCliffEnd(from)) AND (fromBalance < [TR:VestAmount(from) + value])) OR ((GV:BLOCK_TIMESTAMP >= TR:VestCliffEnd(from)) AND (fromBalance < [[TR:VestAmount(from) * [TR:VestEnd(from) - [GV:BLOCK_TIMESTAMP * [GV:BLOCK_TIMESTAMP < TR:VestEnd(from)] + TR:VestEnd(from) * [GV:BLOCK_TIMESTAMP >= TR:VestEnd(from)]]] / 126144000] + value]))",
+      "PositiveEffects": ["revert(\"Transfer exceeds unlocked bal\")"],
+      "NegativeEffects": [],
+      "CallingFunction": "TransferFrom"
     }
   ]
 }

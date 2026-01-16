@@ -65,9 +65,16 @@ abstract contract RulesEngineClientCustom is RulesEngineClient {
     modifier checkRulesBeforeTransferFrom(
         address from,
         address to,
-        uint256 value
+        uint256 value,
+        uint256 fromBalance
     ) {
-        bytes memory encoded = abi.encodeWithSelector(msg.sig, from, to, value);
+        bytes memory encoded = abi.encodeWithSelector(
+            msg.sig,
+            from,
+            to,
+            value,
+            fromBalance
+        );
         _invokeRulesEngine(encoded);
         _;
     }

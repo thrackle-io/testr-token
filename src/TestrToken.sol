@@ -46,7 +46,7 @@ contract TestrToken is RulesEngineClientCustom, ERC20, AccessControl {
     )
         public
         override
-        checkRulesBeforeTransferFrom(from, to, value)
+        checkRulesBeforeTransferFrom(from, to, value, balanceOf(from))
         returns (bool)
     {
         return super.transferFrom(from, to, value);
